@@ -4,8 +4,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 import os
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-change-this-in-production")
-DEBUG = os.environ.get("DEBUG", "1") == "1"
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]").split(",")
+DEBUG = True
+# ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]").split(",")
 ALLOWED_HOSTS =["*"]
 
 INSTALLED_APPS = [
