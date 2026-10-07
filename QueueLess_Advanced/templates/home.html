@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>Queue<span>Less</span> AI</h1>
+  <p>Book a slot, join a live queue, and get an honest waiting-time prediction that keeps learning from every customer served.</p>
+  <a class="button" href="{% url 'providers' %}">Find a service</a>
+  {% if not user.is_authenticated %}<a class="button ghost" href="{% url 'register' %}">Create account</a>{% endif %}
+</section>
+
+{% if tokens %}<h2>Your live tokens</h2>
+<div class="grid">{% for t in tokens %}
+  <a class="card token-card" href="{% url 'token_detail' t.pk %}">
+    <div class="big">{{ t.display_token }}</div><p>{{ t.service.name }} &middot; {{ t.service.provider.name }}</p>
+    <p><span class="pill status-{{ t.status }}">{{ t.get_status_display }}</span>
+       {% if t.status == "WAITING" %}#{{ t.pred.position }} in line &middot; ~{{ t.pred.minutes }} min{% endif %}</p>
+  </a>{% endfor %}</div>{% endif %}
+
+{% if appointments %}<h2>Upcoming bookings</h2>
+<div class="grid">{% for a in appointments %}
+  <div class="card"><b>{{ a.service.name }}</b><p>{{ a.service.provider.name }}</p>
+  <p>{{ a.slot_start|date:"D d M, H:i" }}</p></div>{% endfor %}</div>{% endif %}
+
+<h2>How it works</h2>
+<div class="grid">
+  <div class="card"><b>1. Discover</b><p>Providers ranked by a smart score: rating minus live waiting time.</p></div>
+  <div class="card"><b>2. Book or join</b><p>Reserve a low-crowd slot or take a walk-in token. Booked customers get priority.</p></div>
+  <div class="card"><b>3. Stay informed</b><p>Live position, ETA range and "you're next" alerts. Stay away from the counter.</p></div>
+  <div class="card"><b>4. The system learns</b><p>Each completed service refines predictions, crowd forecasts and staffing advice.</p></div>
+</div>
+
+<h2>Shortest queues right now</h2>
+<div class="grid">{% for c in cards %}{% include "partials/provider_card.html" with smart=True %}{% endfor %}</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Find a service</h1>
+<form class="filters" method="get">
+  <input name="q" value="{{ q }}" placeholder="Search by name, area or service">
+  <select name="category"><option value="">All categories</option>
+    {% for key, label in categories %}<option value="{{ key }}" {% if key == category %}selected{% endif %}>{{ label }}</option>{% endfor %}
+  </select>
+  <button class="button">Search</button>
+</form>
+<p class="muted">Sorted by smart score (rating &minus; predicted wait), so the best option is first.</p>
+<div class="grid">{% for c in cards %}{% include "partials/provider_card.html" with smart=True %}{% empty %}<p>No providers found.</p>{% endfor %}</div>
+{% endblock %}

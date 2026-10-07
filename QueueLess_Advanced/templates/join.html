@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="form-card"><h2>Join a live queue</h2>
+<form method="post">{% csrf_token %}{{ form.as_p }}
+<button class="button">Get digital token</button></form>
+<p class="muted">Priority lane requires an eligible profile. Booked customers are served ahead of walk-ins automatically.</p></div>
+{% endblock %}

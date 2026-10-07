@@ -1,0 +1,12 @@
+<div class="card provider">
+  <div class="row"><h3><a href="{% url 'provider_detail' c.provider.pk %}">{{ c.provider.name }}</a></h3>
+    {% if forloop.first and smart %}<span class="pill good">Smart pick</span>{% endif %}</div>
+  <p class="muted">{{ c.provider.get_category_display }} &middot; {{ c.provider.area }}
+    {% if c.rating %}&middot; &#9733; {{ c.rating }}{% endif %}</p>
+  {% for s, w in c.services %}
+  <div class="svc"><span>{{ s.name }}</span>
+    <span class="pill {% if w.minutes < 10 %}good{% elif w.minutes < 25 %}mid{% else %}bad{% endif %}">
+      ~{{ w.minutes }} min &middot; {{ w.waiting }} waiting</span></div>
+  {% endfor %}
+  <a class="button small" href="{% url 'provider_detail' c.provider.pk %}">Book / Join</a>
+</div>

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}{{ provider.name }} | QueueLess AI{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>{{ provider.name }} {% if provider.verified %}<span class="pill good">Verified</span>{% endif %}</h1>
+  <p class="muted">{{ provider.get_category_display }} &middot; {{ provider.area }} &middot;
+    Open {{ provider.open_time|time:"H:i" }}&ndash;{{ provider.close_time|time:"H:i" }}
+    {% if provider.avg_rating %}&middot; &#9733; {{ provider.avg_rating }}{% endif %}</p>
+  <p>{{ provider.description }}</p>
+</div>
+
+<div class="tabs">{% for d in days %}<a class="{% if d.iso == day.isoformat %}active{% endif %}" href="?date={{ d.iso }}">{{ d.label }}</a>{% endfor %}</div>
+
+{% for item in services %}{% with s=item.service %}
+<div class="card">
+  <div class="row"><h2>{{ s.name }}</h2><span class="muted">&#8377;{{ s.price }} &middot; ~{{ s.average_minutes }} min</span></div>
+  <p>Live now: <span class="pill {% if item.live.minutes < 10 %}good{% elif item.live.minutes < 25 %}mid{% else %}bad{% endif %}">
+    ~{{ item.live.minutes }} min wait</span> {{ item.live.waiting }} waiting &middot; {{ item.live.counters }} counter(s)
+    <a class="button small" href="{% url 'join_queue' %}?service={{ s.pk }}">Join live queue</a></p>
+
+  <h4>Crowd forecast for {{ day|date:"l" }} <small class="muted">(learned from past weeks) &middot; best time: <b>{{ item.best.label }}</b></small></h4>
+  <div class="bars">{% for f in item.forecast %}
+    <div class="barwrap" title="{{ f.expected }} expected arrivals"><div class="bar {{ f.level }} {% if f.now %}now{% endif %}" style="height:{{ f.pct }}%"></div><span>{{ f.hour }}</span></div>
+  {% endfor %}</div>
+
+  <h4>Book a slot</h4>
+  <div class="slots">{% for sl in item.slots %}
+    <form method="post" action="{% url 'book_slot' s.pk %}">{% csrf_token %}
+      <input type="hidden" name="slot" value="{{ sl.iso }}">
+      <button class="slot {{ sl.level }} {% if sl.recommended %}rec{% endif %}" {% if sl.remaining <= 0 %}disabled{% endif %}
+        title="{{ sl.level }} crowd &middot; {{ sl.remaining }} left">{{ sl.label }}</button>
+    </form>{% empty %}<span class="muted">No slots left on this day.</span>{% endfor %}</div>
+  <p class="muted legend"><span class="dot Low"></span>Low crowd <span class="dot Medium"></span>Medium <span class="dot High"></span>High &nbsp; <b>Outlined = AI recommended</b></p>
+</div>{% endwith %}{% endfor %}
+
+<div class="card"><h2>Reviews</h2>
+  {% for r in reviews %}<p><b>{{ r.customer.username }}</b> &#9733;{{ r.rating }} &mdash; {{ r.comment }}</p>{% empty %}<p class="muted">No reviews yet.</p>{% endfor %}
+  {% if user.is_authenticated %}<form method="post" action="{% url 'review' provider.pk %}" class="inline">{% csrf_token %}
+    <select name="rating">{% for i in "54321" %}<option>{{ i }}</option>{% endfor %}</select>
+    <input name="comment" placeholder="Your experience" maxlength="300"><button class="button small">Rate</button></form>{% endif %}
+</div>
+{% endblock %}

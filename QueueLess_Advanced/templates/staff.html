@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Provider Dashboard | QueueLess AI{% endblock %}
+{% block content %}
+<h1>Provider dashboard</h1><p class="muted">Live view &middot; refreshes automatically.</p>
+<div id="staff-live">
+{% for b in blocks %}
+<div class="card">
+  <div class="row"><h2>{{ b.service.name }} <small class="muted">{{ b.service.provider.name }}</small></h2>
+    <form class="inline" method="post" action="{% url 'staff_call_next' b.service.pk %}">{% csrf_token %}
+      <select name="counter"><option value="">Any counter</option>{% for c in b.counters %}{% if c.active %}<option value="{{ c.pk }}">{{ c.name }}</option>{% endif %}{% endfor %}</select>
+      <button class="button">Call next</button></form></div>
+
+  <div class="stats">
+    <div><b>{{ b.rows|length }}</b><span>In queue</span></div>
+    <div><b>{{ b.summary.served }}</b><span>Served today</span></div>
+    <div><b>{{ b.summary.no_shows }}</b><span>No-shows</span></div>
+    <div><b>{{ b.summary.avg|default:"-" }}</b><span>Avg min (today)</span></div>
+    <div><b>{{ b.booked_today }}</b><span>Bookings pending</span></div>
+  </div>
+
+  {% for tip in b.advice %}<div class="advice {{ tip.level }}">{{ tip.text }}</div>{% endfor %}
+
+  <table><tr><th>Token</th><th>Customer</th><th>Lane</th><th>Status</th><th>ETA</th><th>No-show risk</th><th>Actions</th></tr>
+  {% for r in b.rows %}<tr>
+    <td><b>{{ r.t.display_token }}</b></td><td>{{ r.t.customer.username }}</td><td>{{ r.t.get_priority_display }}</td>
+    <td><span class="pill status-{{ r.t.status }}">{{ r.t.get_status_display }}</span>{% if r.t.counter %} <small>{{ r.t.counter.name }}</small>{% endif %}</td>
+    <td>{% if r.t.status == "WAITING" %}~{{ r.pred.minutes }} min{% else %}-{% endif %}</td>
+    <td><span class="pill {% if r.risk >= 30 %}bad{% elif r.risk >= 15 %}mid{% else %}good{% endif %}">{{ r.risk }}%</span></td>
+    <td>
+      {% if r.t.status == "CALLED" %}<form class="inline" method="post" action="{% url 'staff_action' r.t.pk 'start' %}">{% csrf_token %}<button class="button small">Start</button></form>{% endif %}
+      {% if r.t.status == "CALLED" or r.t.status == "SERVING" %}<form class="inline" method="post" action="{% url 'staff_action' r.t.pk 'complete' %}">{% csrf_token %}<button class="button small">Complete</button></form>{% endif %}
+      {% if r.t.status == "WAITING" or r.t.status == "CALLED" %}<form class="inline" method="post" action="{% url 'staff_action' r.t.pk 'no_show' %}">{% csrf_token %}<button class="button small danger">No-show</button></form>{% endif %}
+      {% if r.t.status == "WAITING" and r.t.priority < 3 %}<form class="inline" method="post" action="{% url 'staff_action' r.t.pk 'escalate' %}">{% csrf_token %}<button class="button small ghost">Emergency</button></form>{% endif %}
+    </td></tr>{% empty %}<tr><td colspan="7">No active queue.</td></tr>{% endfor %}</table>
+
+  <p>Counters:
+  {% for c in b.counters %}<form class="inline" method="post" action="{% url 'toggle_counter' c.pk %}">{% csrf_token %}
+    <button class="pill {% if c.active %}good{% else %}bad{% endif %}">{{ c.name }}: {% if c.active %}ON{% else %}OFF{% endif %}</button></form> {% endfor %}</p>
+
+  <h4>Today's expected crowd</h4>
+  <div class="bars small">{% for f in b.forecast %}<div class="barwrap"><div class="bar {{ f.level }} {% if f.now %}now{% endif %}" style="height:{{ f.pct }}%"></div><span>{{ f.hour }}</span></div>{% endfor %}</div>
+</div>{% endfor %}
+</div>
+
+<div class="grid">
+  <div class="card"><h3>Add a service</h3><form method="post" action="{% url 'add_service' %}">{% csrf_token %}{{ service_form.as_p }}<button class="button">Add service</button></form></div>
+  <div class="card"><h3>Add a counter</h3><form method="post" action="{% url 'add_counter' %}">{% csrf_token %}{{ counter_form.as_p }}<button class="button">Add counter</button></form></div>
+</div>
+{% endblock %}

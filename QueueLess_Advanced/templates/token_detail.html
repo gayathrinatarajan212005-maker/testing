@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card token-hero" id="live-token" data-id="{{ token.pk }}">
+  <p class="muted">{{ token.service.provider.name }} &middot; {{ token.service.name }}</p>
+  <div class="giant">{{ token.display_token }}</div>
+  <p><span id="status" class="pill status-{{ token.status }}">{{ token.get_status_display }}</span>
+     {% if token.priority %}<span class="pill mid">{{ token.get_priority_display }}</span>{% endif %}</p>
+  <div class="stats">
+    <div><b id="position">{{ pred.position }}</b><span>Position</span></div>
+    <div><b id="eta">{{ pred.minutes }}</b><span>Minutes</span></div>
+    <div><b id="range">{{ pred.low }}&ndash;{{ pred.high }}</b><span>Likely range</span></div>
+    <div><b id="confidence">{{ pred.confidence }}</b><span>Confidence</span></div>
+  </div>
+  <p id="called-banner" class="message success" {% if token.status != "CALLED" %}hidden{% endif %}>You are being called. Please go to the counter now.</p>
+  <p class="muted">This page updates automatically every 5 seconds.</p>
+  {% if token.status == "WAITING" %}<form method="post" action="{% url 'cancel_token' token.pk %}">{% csrf_token %}<button class="button danger">Cancel token</button></form>{% endif %}
+</div>
+<div class="card"><h3>Why this estimate?</h3>
+  <ul id="why">{% for line in pred.explanation %}<li>{{ line }}</li>{% endfor %}</ul></div>
+{% endblock %}

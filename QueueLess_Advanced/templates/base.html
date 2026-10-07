@@ -1,0 +1,31 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}QueueLess AI{% endblock %}</title>
+<link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+<nav>
+  <a class="brand" href="{% url 'home' %}">Queue<span>Less</span> AI</a>
+  <div class="links">
+    <a href="{% url 'providers' %}">Find Services</a>
+    {% if user.is_authenticated %}
+      <a href="{% url 'join_queue' %}">Join Queue</a>
+      <a href="{% url 'activity' %}">My Activity{% if unread_count %} <b class="badge">{{ unread_count }}</b>{% endif %}</a>
+      {% if is_provider %}<a href="{% url 'staff_dashboard' %}">Provider Dashboard</a>{% endif %}
+      <a href="{% url 'logout' %}">Logout ({{ user.username }})</a>
+    {% else %}
+      <a href="{% url 'login' %}">Login</a><a href="{% url 'register' %}">Register</a>
+    {% endif %}
+  </div>
+</nav>
+<main>
+  {% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}
+  {% block content %}{% endblock %}
+</main>
+<footer>QueueLess AI &middot; Smart Local Service Booking &amp; Provider Management</footer>
+<script src="{% static 'app.js' %}"></script>
+</body>
+</html>

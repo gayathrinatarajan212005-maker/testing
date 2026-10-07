@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="form-card"><h2>Login</h2>
+<form method="post">{% csrf_token %}
+<label>Username</label><input name="username" required>
+<label>Password</label><input type="password" name="password" required>
+<br><button class="button">Login</button></form>
+<p class="muted">Demo: customer / customer123 &middot; senior / senior123 &middot; staff / staff123 &middot; admin / admin123</p>
+<p>New here? <a href="{% url 'register' %}">Create an account</a></p></div>
+{% endblock %}
